@@ -1,0 +1,534 @@
+* 1 Building Abstractions with 
+** 1.1 The Elements of Programming . . . . . . . . . . . . . . . . 6   
+ 
+ - A powerful programming language is more than just a means for instructing a computer to perform tasks. The language also serves a framework for within which we organize our ideas about processes.
+
+ - We should pay close attention to the way a programming language combine simple ideas to form more complex ones.
+
+ - Every powerful language has 3 mechanisms for accomplishing this: 
+   
+basic statments
+
+   PRIMITIVE EXPRESSIONS, which represent the simplest entities the language is concerned with.
+   MEANS OF COMBINATION, by which compound elements are built from simpler ones
+	 MEANS OF ABSTRACTION, by which compound elements can be named and manipulated as units.
+ 
+ - In programming, we deal with 2 kinds of elements: procedures and data.
+	 Data is the stuff we want to manipulate
+	 Procedures are the descriptions of the rules for manipulating data
+
+ - Any powerful programming language should be able to describe primitive data and primitive procedures and should have methods for combining and abstracting procedures and data.
+
+*** 1.1.1 Expressions  . . . . . . . . . . . . . . . . . . . . . . 7   
+
+ - One kind of proven expression you might type is a number
+	 
+   ( More precisely, the expression that you type consists of the numerals that represent the number in base 10)
+
+ - Expressions representing numbers may be combined with an expression representing a primitive procedure ( such as + or * ) to form compound expression that represents the application of the procedure to those numbers. 
+	 
+	 (+ 137 349)
+	 486
+
+	 (* 5 99)
+	 495
+
+ - The convention of placing the operator to the left of operands is known as prefix notation.
+	 An advantage of this is that it can accommodate procedures that may take an arbitrary number of arguments.
+	 Another advantage of prefix notation is that it extends in a straightforward way to allow combinations to be nested.
+
+ - In Lisp, the interpreter always operates in the same basic cycle: it reads the expression evaluates it, then prints the result. known as the read-eval-print-loop (or REPL)
+
+*** 1.1.2 Naming and the Environment . . . . . . . . . . . . . . . 10  
+
+ - A critical aspect of a programming language is the means it provides for using names to refer to computational objects. We say that the name identifies a variable whose value is the object.
+ 
+   (define size 2)
+
+ - Define is the language simplest means of abstraction, it allows us to use simple names to refer to the result of compound operations.
+
+ - Complex programs are constructed by building, step-by-step, objects of increasing complexity.
+	 The interpreter makes the step-by-step program construction convenient because name-object associations can be created incrementally in successive interactions.
+
+ - The possibility of associating values with symbols and later retrieving them means that the interpreter must maintain some sort of memory that keeps track of all the name-object pairs. This memory is called the environment, more precisely, the global environment.
+
+*** 1.1.3 Evaluating Combinations  . . . . . . . . . . . . . . . . 12  
+
+ - One of our goals in this chapter is to isolate issues about thinking procedurally. Let us consider that, in evaluating combinations, the interpreter is itself following a procedure
+
+ - To evaluate a combination we must do the follow the rule 
+   
+   1. evaluate the sub expressions of the combination.
+	 2. Apply the procedure that is the value of the leftmost expression (the operator) to the argument that are the values of other sub expressions (the operands).
+   
+   Observe the first step dictates that in order to accomplish the evaluation of a combination, we must first the evaluate processes of each element in the combination. Thus, the evaluation rule is recursive in nature.
+
+   Figure 1.1 tree representation, showing the value of each sub combination.
+
+ - Reviewing evaluation in terms of the tree, we can imagine that the values of the operands percolate upward.
+
+ - Recursion is a very powerful technique for dealing with hierarchical, treelike objects.
+
+ - The role of the environment is to determine the meaning of symbols and expressions
+
+*** 1.1.4 Compound Procedures  . . . . . . . . . . . . . . . . . . 15  
+
+ - We've identified elements in lisp that appear in any powerful programming language:
+	 -Numbers and arithmetic operations are primitive data and procedures.
+	 -Nesting of combinations provides means of combining operations.
+	 -Definitions that associate names with values provides a limited means of abstraction.
+
+If (define (square x) (* x x))
+
+ We can understand this in the following way:
+   (define (square x) (* x x))
+	 To square something, multiply it by itself
+	 
+ - The general form of a procedure definition is:
+	 (define ( name, formal parameters)
+   body  )
+
+ - We can easily define a procedure sum-of-squares that, given any two
+numbers as arguments, produces the sum of their squares:
+    (define (sum-of-squares x y)
+    (+ (square x) (square y)))
+
+*** 1.1.5 The Substitution Model for Procedure Application . . . . 18  
+ 
+ - To evaluate a combination whose operator names a compound procedure, the interpreter follows much the same process as for combinations whose operators name primitive procedures.
+	 To apply a compound procedure to arguments, evaluate the body of the procedure with each formal parameter replaced by the corresponding argument.
+
+ - The purpose of the substitution model is to help us think about procedure application
+
+ - According to the description of evaluation given in Section 1.1.3, the interpreter first evaluates the operator and operands and then applies the resulting procedure to the resulting arguments. 
+
+ -  An alternative evaluation model would not evaluate the operands until their values were needed. Instead it would first substitute operant expressions for parameters until it obtained an expression involving only primitive operators, and would then perform the evaluation.
+		
+     (sum-of-squares (+ 5 1) (* 5 2))
+     (+ (square (+ 5 1)) (square (* 5 2)) )
+     (+ (* (+ 5 1) (+ 5 1)) (* (* 5 2) (* 5 2)))
+ 
+     followed by the reductions
+     (+ (* 6 6) (* 10 10))
+     (+ 36 100)
+     136
+
+ - This alternative "fully expand and then reduce" evaluation method is known as normal order evaluation
+
+ - In contrast to the “evaluate the arguments and then apply” method that the interpreter actually uses, which is called applicative-order evaluation 
+		
+ - Lisp uses applicative-order evaluation because of the additional efficiency obtained from avoiding multiple evaluations of expressions.
+ 
+*** 1.1.6 Conditional Expressions and Predicates . . . . . . . . . 22  
+
+ - The general form of benefit expression is: 
+   (if < predicate > <consequent > < alternative> )
+
+ -  The three most frequently used are these:
+
+		• (and < e 1 > ...  < e n > )
+		
+		  The interpreter evaluates the expressions <e> one at a time, in left-
+		to-right order. If any <e> evaluates to false, the value of the and
+		expression is false, and the rest of the <e>’s are not evaluated. If
+		all <e>’s evaluate to true values, the value of the and expression is
+		the value of the last one.
+
+	    Example:  (and (> x 5) (< x 10))
+ 
+		• (or < e 1 > ...  < e n > )
+		
+		  The interpreter evaluates the expressions <e> one at a time,in left-
+		to-right order. If any <e> evaluates to a true value, that value is
+		returned as the value of the or expression, and the rest of the
+		<e>’s are not evaluated. If all <e>’s evaluate to false, the value of
+		the or expression is false.
+   
+  		Example:  (define (>= x y) (or (> x y) (= x y)))
+
+		• (not <e> )
+		 
+		  The value of a not expression is true when the expression <e>
+		evaluates to false, and false otherwise.
+
+		  Example:  (define (>= x y) (not (< x y)))
+
+*** 1.1.7 Example: Square Roots by Newton’s Method . . . . . . . . 28 
+*** 1.1.8 Procedures as Black-Box Abstractions . . . . . . . . . . 33  
+
+              sqrt
+               |
+            sqrt-iter
+            /       \
+     good-enough?  Improve
+        /    \        \
+    square   abs    average 
+
+figure 1.2: Procedural decomposition the sqrt program.
+
+
+  - It is crucial that each procedure accomplishes an identifiable task that can be used as a module in defining other procedures.
+	
+	-  we are not the moment concerned with how the procedure computes its result, only that it computes the square. The details of how the square is computed can be suppressed, to be considered for a later time.
+
+  - the choice for the names of the formal parameters in a procedure is irrelevant. such parameters are also known as of bound variables.
+
+** 1.2 Procedures and the Processes they Generate  . . . . . . . . 40  
+	 
+  - Our situation is analogous to that of someone who is learn the rules of how the pieces move interests but knows nothing of typical openings, tactics, or strategy.
+
+  - The ability to visualize the consequences of the  actions under consideration is crucial to becoming an expert programmer
+
+  - A procedure is a pattern for the local evolution of a computational process. It specifies how each stage of the process is built upon the previous stage. We want to make statements about the overall or global behavior for processes whose local evolution has been specified by a procedure.
+
+*** 1.2.1 Linear Recursion and Iteration . . . . . . . . . . . . . 41  
+
+  - We begin by considering the factorial function defined by: 
+
+		n! = n * (n - 1) * (n - 2) ... 
+
+  - If we add the stipulation that 1! Is equal to one, this observation directly translates into a procedure: 
+
+		(define (factorial n )
+		  (if (= n 1)
+		  1
+		  ( n (factorial (- n 1)))))
+
+
+(factorial 6)  --------------------------
+(* 6 (factorial 5))                      \  
+(* 6 (* 5 (factorial 4)))                 \ 
+(* 6 (* 5 (* 4 (factorial 3))))            \
+(* 6 (* 5 (* 4 (* 3 (factoral 2)))))        \
+(* 6 (* 5 (* 4 (* 3 (* 2 (factorial 1))))))  |
+(* 6 (* 5 (* 4 (* 3 (* 2 1)))))             /
+(* 6 (* 5 (* 4 (* 3 2))))                  /
+(* 6 (* 5 (* 4  6)))                      /
+(* 6 (* 5 24))                           /
+(* 6 120)                               /
+720   <---------------------------------
+Figure 1: a linear recursive process for computing 6!
+
+
+(factorial 6) -----------+
+(fact-iter 1 1 6)        |
+(fact-iter 1 2 6)        |  
+(fact-iter 2 3 6)        |
+(fact-iter 6 4 6)        |
+(fact-iter 24 5 6)       |
+(fact-iter 120 6 6)      |
+(fact-iter 720 7 6)      |
+720  <-------------------+
+Figure 2: a linear iterative process for computing 6! 
+
+  - Consider the first process. The substitution model reveals the shape of expansion followed by contraction, indicated by the arrow. The expansion occurs as the process builds up a chain of deferred operations.
+
+  - In general, an iterative process is one who state can be summarized by a fixed number of state variables, together with a fixed rule that describes how the state variable should be updated as the process moves from state to state
+
+  - In general, an iterative process is one whose state can be sum-
+marized by a fixed number of state variables , together with a fixed rule
+that describes how the state variables should be updated as the process
+moves from state to state and an (optional) end test that specifies con-
+ditions under which the process should terminate.
+
+  - In computing n!, The number of steps required grows linearly with n. Such a process is called a linear iterative process.
+
+  - Contrasting iteration and recursion, we must be careful not to
+confuse the notion of a recursive process with the notion of a recursive
+procedure. When we describe a procedure as recursive, we are referring
+to the syntactic fact that the procedure definition refers (either directly
+or indirectly) to the procedure itself. But when we describe a process
+as following a pattern that is, say, linearly recursive, we are speaking
+abou thow the process evolves, not about the syntax of how a procedure
+is written
+
+*** 1.2.2 Tree Recursion . . . . . . . . . . . . . . . . . . . . . 47  
+
+  - Another pattern of computation is culturally recursion.
+
+	 In general, the Fibonacci numbers can be defined by the rule
+
+                   0 if n = 0,
+     Fib(n)   =    1 if n = 1,
+                   Fib(n − 1) + Fib(n − 2) otherwise.
+
+  - We can immediately translate this definition into a recursive procedure for computing Fibonacci numbers:
+
+  (define (fib n)
+    (cond ((= n 0) 0)
+    ((= n 1) 1)
+    (else (+ (fib (- n 1))
+             (fib (- n 2)))))
+
+  - This procedure is instructive as a prototypical tree recursion, but it
+is a terrible way to compute Fibonacci numbers because it does so much
+redundant computation. 
+
+  - One should not conclude from this that tree recursive processes are useless. When we consider processes that operate on hierarchically structured data rather than numbers, we will find the tree recursion is a natural and powerful tool but even the numerical operations, tree recursive processes can be useful in helping us understand the design programs.
+
+*** 1.2.3 Orders of Growth . . . . . . . . . . . . . . . . . . . . 54  
+
+  - Previous examples illustrate the processes can differ considerably in the rates in which they consume computational resources. One convenient Way to 
+describe this process is to use the notion of order of growth.
+
+  - Let n be a parameter that measures the size of a problem, and let R(n) be the amount of resources that the process requires for problem of size n.
+
+  - In general there are number of properties of a problem that we would like to analyze.
+
+  - R(n) might measure the number of internal storage registers use, the number of elementary machine operations performed, and so on.
+
+  - In computers that do only a fixed number of operations at a time, the time required will be proportional to the number of elementary machine operations performed
+
+  - The linear recursive process for computing factorial described in section 1.2.1 the number of steps grows proportionally to the input n. Thus, the steps required for this process grows as theta(n). For the iterative factorial, the number of steps is still theta(n) but the spaces theta(1)-that is, constant.
+
+  - Orders of growth provide only a crude description of behavior of a process.
+
+		For example, a process requiring n^2 steps in the process requiring 1000n^2 in the process requiring  3n^2 +10n +17 steps all have theta(n^2) order of growth.
+
+	- on the other hand, order of growth provides useful indication of how we may expect the behavior process to change as we change the size of the problem.
+
+*** 1.2.4 Exponentiation . . . . . . . . . . . . . . . . . . . . . 57  
+
+  - Consider the problem of computing the exponential of a given number. One way to do this is via recursive definition .
+		
+		b^n = b * b^n-1,
+		b^0 = 1
+
+		Which translates readily into the procedure:
+		
+		(define (expt b n)
+		  (if (= n 0)
+		  1
+		  (* b * (expt b (- n 1)))))
+
+  - This is a linear recursive process, which requires theta(n) steps and theta(n) space. Just as with factorial, we can readily formulate an equivalent linear iteration: 
+
+    (define (expt  b n)
+		  (expt-iter b n 1))
+		(define (expt-iter b counter product)
+		  (if (= counter 0)
+		  product
+		  (expt-iter b 
+		    (- counter 1)
+		    (* b product))))
+
+		this version requires theta(N) steps and theta(1) space
+
+  - This method works fine for exponents that are powers of 2. We can also take advantage of successive squaring and computing exponential's, if we use this rule:
+
+		b^n = (b^n/2)^2    if n is even,
+		b^n = b * b^n-1    if n is odd.
+		
+		We can express this method is a procedure:
+
+		(define (fast-expt b n) 
+		  (cond ((= n 0) 1)
+		    ((even? n) (square (fast-expt b (/ n 2))))
+		    (else (* b (fast-expt b (- n 1))))))
+
+    Where the predicate to test whether an integer is even is defined in terms 
+	  of the primitive procedure remainder by: 
+
+    (define (even? n)
+      (= (remainder n 2) 0))
+
+	- The process evolved by fast-expt grows logarithmically with n in both space and number of steps. 
+
+  - The difference between theta(log n) growth and theta(n) growth become striking as n becomes large.
+		For example, fast-expt for n=1000 requires only 14 multiplications.
+
+	- It is also possible to use the idea of success is going to devise in an iterative algorithm that computes exponential's with a logarithmic number of steps, although, as as is often the case with iterative algorithms, this is not written down so straightforwardly is recursive algorithms.
+
+*** 1.2.5 Greatest Common Divisors . . . . . . . . . . . . . . . . 62  
+
+  - 
+
+*** 1.2.6 Example: Testing for Primality . . . . . . . . . . . . . 65  
+
+** 1.3 Formulating Abstractions with Higher-Order Procedures . . . 74  
+
+  - We've seen that procedures are, in effect, abstractions that describe compound operations on numbers independent of the particular numbers. For example: 
+
+		(define (cube x)(* x x x)) 
+
+	- We not talk about the queue of any particular number, but rather about a method for obtaining the cube of any number.
+
+*** 1.3.1 Procedures as Arguments  . . . . . . . . . . . . . . . . 76  
+*** 1.3.2 Constructing Procedures Using Lambda . . . . . . . . . . 83
+
+  - 
+
+*** 1.3.3 Procedures as General Methods  . . . . . . . . . . . . . 89
+*** 1.3.4 Procedures as Returned Values  . . . . . . . . . . . . . 97
+* 2 Building Abstractions with Data 
+** 2.1 Introduction to Data Abstraction  . . . . . . . . . . . . . 112 
+
+ - We concentrated in chapter 1 of computational processes and the role of procedures and program design. We saw how to use primitive data (numbers) and primitive operations (arithmetic operations), how to combine procedures to form compound procedures through composition, conditionals, and the use of parameters, and how to extract procedures by using define. We saw that a procedure can be regarded as a pattern for local evolution of a process, and we classified, reasoned about, and perform simple algorithmic analyses of some common patterns for processes as embodied in procedures. We also saw the higher order procedures enhance the power of our language by enabling us to manipulate, and thereby to reason in terms of, general methods of computation. This is much the essence of programming.
+
+*** 2.1.1 Example: Arithmetic Operations for Rational Numbers  . . 113 
+
+  - Suppose we want to do arithmetic on rational numbers. We want to be able to add, subtract, multiply, and divide them into tests whether 2 rational numbers are equal.
+
+  - Let us assume that we are ready have a way of constructing a rational number from a numerator and denominator we also assume that, given the rational number, we have a way of extracting (or selecting) its numerator and its denominator. Let us further assume that the constructor and selectors are available as procedures:
+
+		(make-rat <n> <d>) Returns the rational number whose numerator is the integer <n> and whose denominator is the integer <d>.
+		(numer <x>) returns the numerator of a rational number <x>.
+		(denom <x>) returns the denominator of a rational number <n>.
+
+  - Using a powerful strategy of synthesis: wishful thinking. without specifying how make-rat, numer, or denom should be implemented and represented.
+
+	- We can express these rules as procedures:
+		
+	(define (add-rat x y)
+      (make-rat (+ (* (numer x) (denom y))
+                   (* (numer y) (denom x)))
+                (* (denom x) (denom y))))
+	
+	(define (sub-rat x y)
+      (make-rat (- (* (numer x) (denom y))
+                   (* (numer y) (denom x)))
+                (* (denom x) (denom y))))
+	
+	(define (mul-rat x y)
+      (make-rat (* (numer x) (numer y))
+          (* (denom x) (denom y))))
+	
+	(define (div-rat x y)
+      (make-rat (* (numer x) (denom y))
+                (* (denom x) (numer y))))
+	
+	(define (equal-rat? x y)
+	    (= (* (numer x) (denom y))
+         (* (numer y) (denom x))))
+
+*** 2.1.2 Abstraction Barriers . . . . . . . . . . . . . . . . . . 118
+
+-- Programs that use rational numbers -- 
+-- Rational numbers in problem domain -- 
+    add-rat sub-rat ...
+-- Rational numbers as numerators and denominators -- 
+    make-rat numer denom
+-- Rational numbers as pairs --
+    cons car cdr
+However pairs are implemented
+
+
+this shows how data can be the combination of many simpler procedures building up to whatever level of abstraction we are observing.
+
+*** 2.1.3 What Is Meant by Data? . . . . . . . . . . . . . . . . . 122
+
+*** 2.1.4 Extended Exercise: Interval Arithmetic . . . . . . . . . 126
+** 2.2 Hierarchical Data and the Closure Property  . . . . . . . . 132 
+*** 2.2.1 Representing Sequences . . . . . . . . . . . . . . . . . 134
+*** 2.2.2 Hierarchical Structures  . . . . . . . . . . . . . . . . 147
+*** 2.2.3 Sequences as Conventional Interfaces . . . . . . . . . . 154
+*** 2.2.4 Example: A Picture Language  . . . . . . . . . . . . . . 172
+** 2.3 Symbolic Data . . . . . . . . . . . . . . . . . . . . . . . 192 
+*** 2.3.1 Quotation  . . . . . . . . . . . . . . . . . . . . . . . 192
+*** 2.3.2 Example: Symbolic Differentiation  . . . . . . . . . . . 197
+*** 2.3.3 Example: Representing Sets . . . . . . . . . . . . . . . 205
+*** 2.3.4 Example: Huffman Encoding Trees  . . . . . . . . . . . . 218
+** 2.4 Multiple Representations for Abstract Data  . . . . . . . . 229 
+*** 2.4.1 Representations for Complex Numbers  . . . . . . . . . . 232
+*** 2.4.2 Tagged data  . . . . . . . . . . . . . . . . . . . . . . 237
+*** 2.4.3 Data-Directed Programming and Additivity . . . . . . . . 242
+** 2.5 Systems with Generic Operations . . . . . . . . . . . . . . 254 
+*** 2.5.1 Generic Arithmetic Operations  . . . . . . . . . . . . . 255
+*** 2.5.2 Combining Data of Different Types  . . . . . . . . . . . 262
+*** 2.5.3 Example: Symbolic Algebra  . . . . . . . . . . . . . . . 274
+* 3 Modularity, Objects, and State 
+** 3.1 Assignment and Local State  . . . . . . . . . . . . . . . . 296 
+*** 3.1.1 Local State Variables  . . . . . . . . . . . . . . . . . 297
+*** 3.1.2 The Benefits of Introducing Assignment . . . . . . . . . 305
+*** 3.1.3 The Costs of Introducing Assignment  . . . . . . . . . . 311
+** 3.2 The Environment Model of Evaluation . . . . . . . . . . . . 320 
+*** 3.2.1 the Rules for Evaluation . . . . . . . . . . . . . . . . 322
+*** 3.2.2 Applying Simple Procedures   . . . . . . . . . . . . . . 327
+*** 3.2.3 Frames as the Repository of Local State  . . . . . . . . 330
+*** 3.2.4 Internal Definitions . . . . . . . . . . . . . . . . . . 337
+** 3.3 Modeling with Mutable Data  . . . . . . . . . . . . . . . . 341 
+*** 3.3.1 Mutable List Structure . . . . . . . . . . . . . . . . . 342
+*** 3.3.2 Representing Queues  . . . . . . . . . . . . . . . . . . 353
+*** 3.3.3 Representing Tables  . . . . . . . . . . . . . . . . . . 360
+*** 3.3.4 A Simulator for Digital Circuits . . . . . . . . . . . . 369
+*** 3.3.5 Propagation of Constraints . . . . . . . . . . . . . . . 386
+** 3.4 Concurrency: Time Is of the Essence . . . . . . . . . . . . 401 
+*** 3.4.1 The Nature of Time in Concurrent Systems . . . . . . . . 403
+*** 3.4.2 Mechanisms for Controlling Concurrency . . . . . . . . . 410
+** 3.5 Streams . . . . . . . . . . . . . . . . . . . . . . . . . . 428 
+*** 3.5.1 Streams Are Delayed Lists  . . . . . . . . . . . . . . . 430
+*** 3.5.2 Infinite Streams . . . . . . . . . . . . . . . . . . . . 441
+*** 3.5.3 Exploiting the Stream Paradigm . . . . . . . . . . . . . 453
+*** 3.5.4 Streams and Delayed Evaluation . . . . . . . . . . . . . 470
+*** 3.5.5 Modularity of Functional Programs and Objects  . . . . . 479
+* 4 Metalinguistic Abstraction 
+** 4.1 The Metacircular Evaluator  . . . . . . . . . . . . . . . . 492 
+
+  - It is no exaggeration to regard this as the most fundamental idea in
+programming: The evaluator, which determines the meaning of expres-
+sions in a programming language, is just another program.
+
+*** 4.1.1 The Core of the Evaluator  . . . . . . . . . . . . . . . 495 
+
+
+
+
+
+*** 4.1.2 Representing Expressions   . . . . . . . . . . . . . . . 501 
+
+
+
+*** 4.1.3 Evaluator Data Structures  . . . . . . . . . . . . . . . 512 
+*** 4.1.4 Running the Evaluator as a Program . . . . . . . . . . . 518 
+*** 4.1.5 Data as Programs . . . . . . . . . . . . . . . . . . . . 522 
+*** 4.1.6 Internal Definitions . . . . . . . . . . . . . . . . . . 526 
+*** 4.1.7 Separating Syntactic Analysis from Execution . . . . . . 534 
+** 4.2 Variations on a Scheme — Lazy Evaluation  . . . . . . . . . 541 
+*** 4.2.1 Normal Order and Applicative Order . . . . . . . . . . . 542 
+*** 4.2.2 An Interpreter with Lazy Evaluation  . . . . . . . . . . 544 
+*** 4.2.3 Streams as Lazy Lists  . . . . . . . . . . . . . . . . . 555 
+** 4.3 Variations on a Scheme — Nondeterministic Computing . . . . 559 
+*** 4.3.1 Amb and Search . . . . . . . . . . . . . . . . . . . . . 561 
+*** 4.3.2 Examples of Nondeterministic Programs  . . . . . . . . . 567 
+*** 4.3.3 Implementing the Amb Evaluator . . . . . . . . . . . . . 578 
+** 4.4 Logic Programming . . . . . . . . . . . . . . . . . . . . . 594 
+*** 4.4.1 Deductive Information Retrieval  . . . . . . . . . . . . 599 
+*** 4.4.2 How the Query System Work  . . . . . . . . . . . . . . . 615 
+*** 4.4.3 Is Logic Programming Mathematical Logic? . . . . . . . . 627 
+*** 4.4.4 Implementing the Query System  . . . . . . . . . . . . . 635 
+**** 4.4.4.1 The Driver Loop and Instantiation . . . . . . . . . . 636 
+**** 4.4.4.2 The Evaluator . . . . . . . . . . . . . . . . . . . . 638 
+**** 4.4.4.3 Finding Assertions by Pattern Matching  . . . . . . . 642 
+**** 4.4.4.4 Rules and Unification . . . . . . . . . . . . . . . . 645 
+**** 4.4.4.5 Maintaining the Data Base . . . . . . . . . . . . . . 651 
+**** 4.4.4.6 Stream Operations . . . . . . . . . . . . . . . . . . 654 
+**** 4.4.4.7 Query Syntax Procedures . . . . . . . . . . . . . . . 656 
+**** 4.4.4.8 Frames and Bindings . . . . . . . . . . . . . . . . . 659 
+* 5 Computing with Register Mappines 
+** 5.1 Designing Register Machines . . . . . . . . . . . . . . . . 668 
+*** 5.1.1 A Language for Describing Register Machines  . . . . . . 672 
+*** 5.1.2 Abstraction in Machine Design  . . . . . . . . . . . . . 678 
+*** 5.1.3 Subroutines  . . . . . . . . . . . . . . . . . . . . . . 681 
+*** 5.1.4 Using a Stack to Implement Recursion . . . . . . . . . . 686 
+*** 5.1.5 Instruction Summary  . . . . . . . . . . . . . . . . . . 695 
+** 5.2 A Register-Machine Simulator  . . . . . . . . . . . . . . . 696 
+*** 5.2.1 The Machine Model  . . . . . . . . . . . . . . . . . . . 698 
+*** 5.2.2 The Assembler  . . . . . . . . . . . . . . . . . . . . . 704 
+*** 5.2.3 Generating Execution Procedures for Instructions . . . . 708 
+*** 5.2.4 Monitoring Machine Performance   . . . . . . . . . . . . 718 
+** 5.3 Storage Allocation and Garbage Collection . . . . . . . . . 723 
+*** 5.3.1 Memory as Vectors  . . . . . . . . . . . . . . . . . . . 724 
+*** 5.3.2 Maintaining the Illusion of Infinite Memory  . . . . . . 731 
+** 5.4 The Explicit-Contorl Evaluator  . . . . . . . . . . . . . . 741 
+*** 5.4.1 THE CORE OF THE EXPLICIT-CONTROL Evaluator . . . . . . . 743 
+*** 5.4.2 Sequence Evaluation and Tail Recursion . . . . . . . . . 751 
+*** 5.4.3 Conditionals, Assignments, and Definitions . . . . . . . 756 
+*** 5.4.4 Running the Evaluator  . . . . . . . . . . . . . . . . . 759 
+** 5.5 Compilation . . . . . . . . . . . . . . . . . . . . . . . . 767 
+*** 5.5.1 Structure of the Compiler  . . . . . . . . . . . . . . . 772 
+*** 5.5.2 Compiling Expressions  . . . . . . . . . . . . . . . . . 779 
+*** 5.5.3 Compiling Combinations . . . . . . . . . . . . . . . . . 788 
+*** 5.5.4 Combining Instruction Sequences  . . . . . . . . . . . . 797 
+*** 5.5.5 An Example of Compiled Code  . . . . . . . . . . . . . . 802 
+*** 5.5.6 Lexical Addressing . . . . . . . . . . . . . . . . . . . 817 
+*** 5.5.7 Interfacing Compiled Code to the Evaluator . . . . . . . 823 
